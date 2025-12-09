@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
 from db import Base
 
 class Task(Base):
@@ -8,3 +8,4 @@ class Task(Base):
     title = Column(String)
     description = Column(String, nullable=True)
     completed = Column(Boolean, default=False)
+    user_id = Column(Integer, ForeignKey("users.id"))

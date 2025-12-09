@@ -10,6 +10,13 @@ from schema.UserSchema import UserSchema
 app = FastAPI(title="Task Manager API")
 Base.metadata.create_all(bind=engine)
 
+def get_current_user(token: str, db: Session):
+    if not token.startswith("token_"):
+        return None
+    user_id = token.replace("token_", "")
+    user = db.query(User).filter(User.id == user_id).first()
+    return user
+
 @app.post("/login")
 def login(user: UserSchema, db: Session = Depends(get_db)):
     db_user = db.query(User).filter(User.username == user.username).first()
@@ -31,22 +38,34 @@ def sign_in(user: UserSchema, db: Session = Depends(get_db)):
     return {"message": "New User created successfully...!"}
 
 @app.get("/tasks")
-def get_tasks(db: Session = Depends(get_db)):
-    return db.query(Task).all()
+def get_tasks(token: str, db: Session = Depends(get_db)):
+    user = get_current_user(token, db)
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid session.")
+    return db.query(Task).filter(Task.user_id == user.id).all()
 
 @app.get("/tasks/{task_id}")
-def get_single_task(task_id: int, db: Session = Depends(get_db)):
-    task = db.query(Task).filter(Task.id == task_id).first()
+def get_single_task(task_id: int, token: str, db: Session = Depends(get_db)):
+    user = get_current_user(token, db)
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid session.")
+    
+    task = db.query(Task).filter(Task.user_id == user.id, Task.id == task_id).first()
     if not task:
         raise HTTPException(status_code=404, detail="Task not found.")
     return {"task": task}
 
 @app.post("/tasks")
-def add_task(task: TaskSchema, db: Session = Depends(get_db)):
+def add_task(task: TaskSchema, token: str, db: Session = Depends(get_db)):
+    user = get_current_user(token, db)
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid session.")
+    
     new_task = Task(
         title = task.title,
         description = task.description,
-        completed = task.completed
+        completed = task.completed,
+        user_id = user.id
     )
     db.add(new_task)
     db.commit()
@@ -54,10 +73,15 @@ def add_task(task: TaskSchema, db: Session = Depends(get_db)):
     return {"message": "Task added successfully...!", "id": new_task.id}
 
 @app.put("/tasks/{task_id}")
-def update_task(task_id: int, updated: TaskSchema, db: Session = Depends(get_db)):
-    task = db.query(Task).filter(Task.id == task_id).first()
+def update_task(task_id: int, token: str, updated: TaskSchema, db: Session = Depends(get_db)):
+    user = get_current_user(token, db)
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid session.")
+
+    task = db.query(Task).filter(Task.user_id == user.id, Task.id == task_id).first()
     if not task:
         raise HTTPException(status_code=404, detail="Task not found.")
+    
     task.title = updated.title
     task.description = updated.description
     task.completed = updated.completed
@@ -66,8 +90,12 @@ def update_task(task_id: int, updated: TaskSchema, db: Session = Depends(get_db)
     return {"message": "Task updated successfully...!", "task": task}
 
 @app.delete("/tasks/{task_id}")
-def delete_task(task_id: int, db: Session = Depends(get_db)):
-    task = db.query(Task).filter(Task.id == task_id).first()
+def delete_task(task_id: int, token: str, db: Session = Depends(get_db)):
+    user = get_current_user(token, db)
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid session.")
+    
+    task = db.query(Task).filter(Task.user_id == user.id, Task.id == task_id).first()
     if not task:
         raise HTTPException(status_code=404, detail="Task not found.")
     db.delete(task)
@@ -75,7 +103,11 @@ def delete_task(task_id: int, db: Session = Depends(get_db)):
     return {"message": "Task deleted successfully...!"}
 
 @app.delete("/tasks")
-def delete_all_tasks(db: Session = Depends(get_db)):
-    db.query(Task).delete()
+def delete_all_tasks(token: str, db: Session = Depends(get_db)):
+    user = get_current_user(token, db)
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid session.")
+    
+    db.query(Task).filter(Task.user_id == user.id).delete()
     db.commit()
     return {"message": "Deleted all tasks."}
