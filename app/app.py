@@ -8,6 +8,7 @@ from models.User import User
 from schema.TaskSchema import TaskSchema
 from schema.UserSchema import UserSchema
 from utils.jwt import create_access_token, decode_access_token
+from utils.hashing import hash_password, verify_password
 
 app = FastAPI(title="Task Manager API")
 Base.metadata.create_all(bind=engine)
@@ -26,7 +27,7 @@ def get_current_user(token: str = Header(None), db: Session = Depends(get_db)) -
 @app.post("/login")
 def login(user: UserSchema, db: Session = Depends(get_db)):
     db_user = db.query(User).filter(User.username == user.username).first()
-    if not db_user or db_user.password != user.password:
+    if not db_user or not verify_password(user.password, db_user.password):
         raise HTTPException(status_code=400, detail="Invalid username or password.")
     
     access_token_expires = timedelta(minutes=30)
@@ -36,9 +37,10 @@ def login(user: UserSchema, db: Session = Depends(get_db)):
 
 @app.post("/signin")
 def sign_in(user: UserSchema, db: Session = Depends(get_db)):
+    hashed_pwd = hash_password(user.password)
     new_user = User(
         username = user.username,
-        password = user.password
+        password = hashed_pwd
     )
     db.add(new_user)
     db.commit()
