@@ -1,21 +1,20 @@
 # Task Manager API
 
-A RESTful backend web service built using Python, FastAPI, SQLAlchemy, and PostgreSQL to manage user authentication and task management workflows.
+Task Manager API is a robust, RESTful backend web service engineered to securely handle user authentication and streamline comprehensive task management workflows.
+
+Operating as a fully modular backend architecture, the application provides secure, authenticated access to task creation, tracking, and modification. It prioritizes data integrity and security by utilizing JSON Web Tokens (JWT) for session management and strict Pydantic schemas to validate data across all incoming API requests.
 
 ---
 
-## Project Overview & Workflow
+## Key Highlights of the Project
 
-The core API architecture and endpoints are implemented in modular FastAPI components. The application follows a complete end-to-end backend engineering workflow:
-
-1. **User Authentication:** Handles user registration (`/signin`) and authentication (`/login`), generating JSON Web Tokens (JWT) and securing passwords via bcrypt hashing.
-2. **Task CRUD Operations:** Provides endpoints to create, read, update, and delete tasks associated with authenticated users.
-3. **Partial Field Updates:** Supports partial task updates (`PUT /tasks/{id}`) using Pydantic schemas and `exclude_unset=True`.
-4. **Input Validation:** Enforces strict data validation on usernames, passwords, titles, and descriptions using Pydantic `Field` constraints.
-5. **Sandbox Auto-Cleanup:** Features a background lifespan worker that automatically purges sandbox accounts and tasks created more than 10 minutes ago.
-6. **Interactive Documentation:** Serves automatic OpenAPI documentation via Swagger UI (`/docs`) and ReDoc (`/redoc`).
+- **Modern Backend Stack:** Built natively with Python and FastAPI, leveraging SQLAlchemy for ORM-based database interactions and PostgreSQL for relational data storage.
+- **Secure Authentication & Validation:** Implements secure JWT-based authentication and bcrypt password hashing, paired with strict input validation and support for dynamic partial data updates (`exclude_unset=True`).
+- **Automated Background Processes:** Engineered with a custom background lifespan worker designed to automatically detect and purge temporary sandbox accounts and stale tasks after 10 minutes, ensuring continuous database optimization.
+- **Interactive API Documentation:** Automatically generates and serves interactive OpenAPI documentation via Swagger UI (`/docs`) and ReDoc (`/redoc`), enabling seamless developer onboarding and immediate endpoint testing.
 
 ---
+
 
 ## API Endpoints Summary
 
@@ -32,12 +31,18 @@ The core API architecture and endpoints are implemented in modular FastAPI compo
 
 ---
 
-## Test Credentials
+## Local Testing & Interactive Documentation
 
-For quick testing via Swagger UI (`/docs`) or Postman, you can use the pre-configured sandbox credentials:
+Once the application server is running locally, you can access the interactive Swagger UI documentation at:
 
-* **Username:** `test_user`
-* **Password:** `1234`
+* **Swagger UI:** `http://127.0.0.1:8000/docs`
+* **ReDoc:** `http://127.0.0.1:8000/redoc`
+
+### How to Test Endpoints:
+1. Open `http://127.0.0.1:8000/docs` in your browser.
+2. Use the **`POST /signin`** endpoint to register a new user account with your choice of username and password.
+3. Use the **`POST /login`** endpoint to authenticate. Copy the returned `access_token`.
+4. Click the **Authorize** button (top right of Swagger UI) or pass the token in the `token` header to access protected task management endpoints (`/tasks`).
 
 ---
 

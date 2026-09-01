@@ -44,16 +44,24 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="Task Manager API",
     description=(
-        "A backend application built using FastAPI to learn FastAPI and create a simple backend for task management.\n\n"
-        "**Test Credentials**:\n"
-        "- **Username**: `test_user`\n"
-        "- **Password**: `1234`\n\n"
-        "**Auto-Cleanup**: All sandbox accounts and tasks automatically self-destruct after **10 minutes** to keep storage clean."
+        "Task Manager API is a robust, RESTful backend web service engineered to securely handle user authentication "
+        "and streamline comprehensive task management workflows.\n\n"
+        "Operating as a fully modular backend architecture, the application provides secure, authenticated access to task "
+        "creation, tracking, and modification. It prioritizes data integrity and security by utilizing JSON Web Tokens (JWT) "
+        "for session management and strict Pydantic schemas to validate data across all incoming API requests.\n\n"
+        "**Key Highlights of the Project:**\n"
+        "- **Modern Backend Stack:** Built natively with Python and FastAPI, leveraging SQLAlchemy for ORM-based database interactions "
+        "and PostgreSQL for relational data storage.\n"
+        "- **Secure Authentication & Validation:** Implements secure JWT-based authentication and bcrypt password hashing, "
+        "paired with strict input validation and support for dynamic partial data updates (exclude_unset=True).\n"
+        "- **Automated Background Processes:** Engineered with a custom background lifespan worker designed to automatically "
+        "detect and purge temporary sandbox accounts and stale tasks after 10 minutes, ensuring continuous database optimization.\n"
+        "- **Interactive API Documentation:** Automatically generates and serves interactive OpenAPI documentation via Swagger UI "
+        "and ReDoc for seamless endpoint testing."
     ),
     version="1.0.0",
     lifespan=lifespan
 )
-
 
 Base.metadata.create_all(bind=engine)
 
